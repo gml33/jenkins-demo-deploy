@@ -56,7 +56,7 @@ pipeline {
 
     post {
         success {
-            echo 'Deploy completado correctamente: https://demo.ensigna.tech'
+            echo 'Deploy completado correctamente: https://demo2.ensigna.tech'
         }
 
         failure {
