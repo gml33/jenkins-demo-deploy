@@ -16,7 +16,7 @@ services:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik_public"
 
-        - "traefik.http.routers.demo.rule=Host(`demo2.ensigna.tech`)"
+        - "traefik.http.routers.demo.rule=Host(`cachilo.ensigna.tech`)"
         - "traefik.http.routers.demo.entrypoints=websecure"
         - "traefik.http.routers.demo.tls=true"
         - "traefik.http.routers.demo.tls.certresolver=le"
