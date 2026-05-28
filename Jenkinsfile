@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         APP_NAME = 'demo-app2'
-        IMAGE_BASE = 'demo-app2'
+        IMAGE_NAME = 'demo-app2:latest'
         STACK_FILE = 'stack.yml'
         REPO_URL = 'https://github.com/gml33/jenkins-demo-deploy.git'
         BRANCH = 'main'
@@ -18,11 +18,10 @@ pipeline {
             }
         }
 
-        stage('Debug') {
+        stage('Workspace debug') {
             steps {
                 sh '''
                 pwd
-                git rev-parse --short HEAD
                 cat public/index.html
                 '''
             }
@@ -31,8 +30,7 @@ pipeline {
         stage('Build image') {
             steps {
                 sh '''
-                export IMAGE_NAME="${IMAGE_BASE}:${BUILD_NUMBER}"
-                docker build --no-cache -t "${IMAGE_NAME}" .
+                docker build --no-cache -t ${IMAGE_NAME} .
                 '''
             }
         }
@@ -40,8 +38,8 @@ pipeline {
         stage('Deploy stack') {
             steps {
                 sh '''
-                export IMAGE_NAME="demo-app2:${BUILD_NUMBER}"
-                docker stack deploy -c stack.yml demo-app2
+                docker stack deploy -c ${STACK_FILE} ${APP_NAME}
+                docker service update --force ${APP_NAME}_web
                 '''
             }
         }
@@ -50,9 +48,19 @@ pipeline {
             steps {
                 sh '''
                 docker service inspect ${APP_NAME}_web --format '{{.Spec.TaskTemplate.ContainerSpec.Image}}'
-                docker service ps ${APP_NAME}_web --no-trunc
+                docker service ps ${APP_NAME}_web
                 '''
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deploy completado correctamente: https://cachilo.ensigna.tech'
+        }
+
+        failure {
+            echo 'Deploy fallido.'
         }
     }
 }
