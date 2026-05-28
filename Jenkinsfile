@@ -40,8 +40,8 @@ pipeline {
         stage('Deploy stack') {
             steps {
                 sh '''
-                export IMAGE_NAME="${IMAGE_BASE}:${BUILD_NUMBER}"
-                docker stack deploy -c ${STACK_FILE} ${APP_NAME}
+                export IMAGE_NAME="demo-app2:${BUILD_NUMBER}"
+                docker stack deploy -c stack.yml demo-app2
                 '''
             }
         }
