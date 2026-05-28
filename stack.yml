@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   web:
-    image: demo-app:latest
+    image: demo-app2:latest
     networks:
       - traefik_public
     deploy:
