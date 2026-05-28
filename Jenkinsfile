@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         APP_NAME = 'demo-app2'
-        IMAGE_NAME = 'demo-app2:latest'
+        IMAGE_BASE = 'demo-app2'
         STACK_FILE = 'stack.yml'
         REPO_URL = 'https://github.com/gml33/jenkins-demo-deploy.git'
         BRANCH = 'main'
@@ -18,12 +18,12 @@ pipeline {
             }
         }
 
-        stage('Workspace debug') {
+        stage('Debug') {
             steps {
                 sh '''
                 pwd
-                ls -lah
-                find . -maxdepth 3 -type f | sort
+                git rev-parse --short HEAD
+                cat public/index.html
                 '''
             }
         }
@@ -31,7 +31,8 @@ pipeline {
         stage('Build image') {
             steps {
                 sh '''
-                docker build --no-cache -t ${IMAGE_NAME} .
+                export IMAGE_NAME="${IMAGE_BASE}:${BUILD_NUMBER}"
+                docker build --no-cache -t "${IMAGE_NAME}" .
                 '''
             }
         }
@@ -39,6 +40,7 @@ pipeline {
         stage('Deploy stack') {
             steps {
                 sh '''
+                export IMAGE_NAME="${IMAGE_BASE}:${BUILD_NUMBER}"
                 docker stack deploy -c ${STACK_FILE} ${APP_NAME}
                 '''
             }
@@ -47,20 +49,10 @@ pipeline {
         stage('Verify') {
             steps {
                 sh '''
-                docker service ls | grep ${APP_NAME}
-                docker service ps ${APP_NAME}_web
+                docker service inspect ${APP_NAME}_web --format '{{.Spec.TaskTemplate.ContainerSpec.Image}}'
+                docker service ps ${APP_NAME}_web --no-trunc
                 '''
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'Deploy completado correctamente: https://cachilo.ensigna.tech'
-        }
-
-        failure {
-            echo 'Deploy fallido. Revisar logs del pipeline y estado del servicio Swarm.'
         }
     }
 }
